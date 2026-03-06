@@ -207,6 +207,8 @@ class ParquetToPostgres:
             e: 导入错误
         """
 
+        file_name = os.path.basename(parquet_path)
+        self.logger.info(f"📄 当前导入文件: {file_name}")
         self.logger.info(f"🚀 极速 COPY 模式: {parquet_path}")
 
         ddl, col_mapping, original_cols = self.generate_ddl_from_parquet(
@@ -298,6 +300,8 @@ class ParquetToPostgres:
             batch_size (int, optional): 流式块大小. Defaults to 50000.
         """
 
+        file_name = os.path.basename(parquet_path)
+        self.logger.info(f"📄 当前导入文件: {file_name}")
         from tqdm import tqdm
 
         ddl, col_mapping, _ = self.generate_ddl_from_parquet(
@@ -352,6 +356,8 @@ class ParquetToPostgres:
             batch_size (int, optional): 流式块大小. Defaults to 50000.
         """
 
+        file_name = os.path.basename(parquet_path)
+        self.logger.info(f"📄 当前导入文件: {file_name}")
         self.logger.info(f"🌊 零拷贝流式模式（极低内存）...")
 
         ddl, col_mapping, _ = self.generate_ddl_from_parquet(
