@@ -131,17 +131,44 @@ class DailyDataSave:
             index=False,
         )
 
-    def clean_to_dwd(self) -> None:
-        """清洗数据到 DWD 层"""
-        process_date: str = self.get_yesterday()
+    def clean_to_dwd(
+        self, start_date: str | None = None, end_date: str | None = None
+    ) -> None:
+        """清洗数据到 DWD 层
 
-        # 清洗并保存破损数据
-        bk_df = self.clean_breakage_data(process_date)
-        self.save_to_dwd(bk_df, "route_breakage_dwd", process_date)
+        Args:
+            start_date: 起始日期 (YYYY-MM-DD)
+                - None: 默认处理昨天（保持原有行为）
+            end_date: 终止日期 (YYYY-MM-DD)
+                - None: 则只处理 start_date 这一天
+                - 有值: 则处理从 start_date 到 end_date 的所有日期（包含首尾）
+        """
+        # 生成日期列表
+        if start_date is None:
+            # 默认处理昨天
+            process_dates: list[str] = [self.get_yesterday()]
+        elif end_date is None:
+            # 只处理单日
+            process_dates = [start_date]
+        else:
+            # 处理日期范围
+            start = datetime.strptime(start_date, "%Y-%m-%d")
+            end = datetime.strptime(end_date, "%Y-%m-%d")
+            process_dates = []
+            current = start
+            while current <= end:
+                process_dates.append(current.strftime("%Y-%m-%d"))
+                current += timedelta(days=1)
 
-        # 清洗并保存全量数据
-        tt_df = self.clean_total_data(process_date)
-        self.save_to_dwd(tt_df, "route_total_dwd", process_date)
+        # 循环处理每一天的数据
+        for process_date in process_dates:
+            # 清洗并保存破损数据
+            bk_df = self.clean_breakage_data(process_date)
+            self.save_to_dwd(bk_df, "route_breakage_dwd", process_date)
+
+            # 清洗并保存全量数据
+            tt_df = self.clean_total_data(process_date)
+            self.save_to_dwd(tt_df, "route_total_dwd", process_date)
 
     def operation(self) -> None:
         """数据保存任务的主运行方法"""
